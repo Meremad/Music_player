@@ -1,0 +1,13 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<ul class="flex space-x-6">
+    <% if (locals.user) { %>
+      <li><a href="/player" class="text-gray-600 hover:text-gray-900">Player</a></li>
+      <li><a href="/api/history" class="text-gray-600 hover:text-gray-900">API History</a></li>
+      <% if (locals.user.isAdmin) { %>
+        <li><a href="/admin" class="text-gray-600 hover:text-gray-900">Admin</a></li>
+      <% } %>
+      <li><a href="/logout" class="text-gray-600 hover:text-gray-900">Logout</a></li>
+    <% } else { %>
+      <!-- ... -->
+    <% } %>
+  </ul>
