@@ -4,13 +4,10 @@ exports.getPlayer = (req, res) => {
   res.render("player", { user: req.session.user })
 }
 
-
 const getSpotifyToken = async () => {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-  
   const authString = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-
   try {
     const response = await axios.post(
       "https://accounts.spotify.com/api/token",
@@ -22,7 +19,9 @@ const getSpotifyToken = async () => {
         },
       }
     );
+
     console.log("Spotify token obtained successfully");
+    console.log("Token:", response.data.access_token);
     return response.data.access_token;
   } catch (error) {
     console.error("Error getting Spotify token:", error.response?.data || error.message);
@@ -41,13 +40,14 @@ exports.searchSongs = async (req, res) => {
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
+    console.log("Songs found:", response.data.tracks.items.length);
+    
     res.json(response.data);
   } catch (error) {
     console.error("Error searching songs:", error.response?.data || error.message);
     res.status(500).json({ error: "An error occurred while searching for songs" });
   }
 };
-
 
 exports.playSong = async (req, res) => {
   const { id } = req.params
@@ -59,6 +59,7 @@ exports.playSong = async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
       },
     })
+    console.log("Playing song:", response.data)
     res.json(response.data)
   } catch (error) {
     console.error("Error playing song:", error)
