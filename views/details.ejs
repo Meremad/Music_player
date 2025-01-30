@@ -1,0 +1,31 @@
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+      <div class="p-6 border-b border-gray-200">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Song Details</h1>
+        <h2 class="text-2xl font-semibold text-gray-700 mb-2">
+          <%= title %> by <span class="text-blue-600"><%= artist %></span>
+        </h2>
+      </div>
+  
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Lyrics</h3>
+        <pre class="whitespace-pre-wrap text-gray-600 font-mono bg-gray-50 p-4 rounded-lg shadow-inner">
+          <%= lyrics %>
+        </pre>
+      </div>
+  
+      <div class="p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Artist Info</h3>
+        <p class="text-gray-700 mb-2">
+          <strong class="font-semibold">Name:</strong> 
+          <span class="text-blue-600"><%= artistInfo.name %></span>
+        </p>
+        <p class="text-gray-700">
+          <strong class="font-semibold">Bio:</strong> 
+          <span class="text-gray-600"><%= artistInfo.bio.summary %></span>
+        </p>
+      </div>
+    </div>
+  
+    <%- include('partials/footer') %>
+  </div>

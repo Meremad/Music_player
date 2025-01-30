@@ -23,7 +23,8 @@ function searchSongs() {
                     <h3 class="font-bold">${track.name}</h3>
                     <p>${track.artists[0].name}</p>
                     <button onclick="playSong('${track.id}')" class="mt-2 bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Play</button>
-                `;
+                    <a href="/player/details?artist=${track.artists[0].name}&title=${track.name}" class="mt-2 bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Details</a>
+                    `;
                 resultsDiv.appendChild(trackDiv);
             });
         })
@@ -68,6 +69,7 @@ function getVideo(query) {
             alert('An error occurred while fetching the video. Please try again.');
         });
 }
+
 </script>
 
 <%- include('partials/footer') %>
