@@ -63,7 +63,7 @@ exports.playSong = async (req, res) => {
     const history = new ApiHistory({
       userId: req.session.user.id,
       endpoint: 'play-song',
-      query: `Song ID: ${id}`,
+      query: response.data.name,
       result: response.data,
     });
     
@@ -82,7 +82,16 @@ exports.getVideo = async (req, res) => {
     const response = await axios.get(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&key=${process.env.YOUTUBE_API_KEY}`,
     )
+    
     const videoId = response.data.items[0].id.videoId
+
+    await ApiHistory.create({
+      userId: req.session.user.id,
+      endpoint: 'get-video',
+      query: q,
+      result: { videoId },
+    });
+
     res.json({ videoId })
   } catch (error) {
     console.error("Error getting video:", error)

@@ -25,7 +25,6 @@ exports.getArtistInfo = async (req, res) => {
     const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(artist)}&api_key=${process.env.LAST_FM_API_KEY}&format=json`);
     const data = await response.json();
     
-    // Save to history
     await ApiHistory.create({
       userId: req.session.user.id,
       endpoint: 'artist-info',

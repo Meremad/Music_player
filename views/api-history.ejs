@@ -3,21 +3,18 @@
 <table class="w-full border-collapse border">
     <thead>
         <tr>
-            <th class="border p-2">API</th>
-            <th class="border p-2">Request</th>
+            <th class="border p-2">Name</th>
+            <th class="border p-2">Type</th>
             <th class="border p-2">Timestamp</th>
-            <th class="border p-2">Actions</th>
         </tr>
     </thead>
     <tbody>
         <% history.forEach(entry => { %>
             <tr>
-                <td class="border p-2"><%= entry.apiName %></td>
-                <td class="border p-2"><%= entry.request %></td>
+                <td class="border p-2"><%= entry.query %></td>
+                <td class="border p-2"><%= entry.endpoint %></td>
                 <td class="border p-2"><%= entry.timestamp.toLocaleString() %></td>
-                <td class="border p-2">
-                    <button onclick="viewDetails('<%= entry._id %>')" class="bg-blue-500 text-white px-2 py-1 rounded">View Details</button>
-                </td>
+
             </tr>
         <% }) %>
     </tbody>
