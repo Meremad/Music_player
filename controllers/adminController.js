@@ -1,8 +1,13 @@
 const User = require('../models/User');
 
 exports.getAdminPanel = async (req, res) => {
-  const users = await User.find({ deletedAt: null });
-  res.render('admin', { users });
+  try {
+    const users = await User.find({ deletedAt: null });
+    res.render("admin", { users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 exports.deleteUser = async (req, res) => {

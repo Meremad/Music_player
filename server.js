@@ -34,8 +34,9 @@ app.set("views", path.join(__dirname, "views"))
 
 // Routes
 app.use("/", require("./routes/auth"))
-app.use("/admin", require("./routes/admin"))
 app.use("/player", require("./routes/player"))
+app.use("/admin", require("./routes/admin"))
+
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
