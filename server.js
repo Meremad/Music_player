@@ -45,10 +45,11 @@ const User = require("./models/User")
 async function createAdminUser() {
   try {
     const adminUsername = "admin"
-    const adminPassword = process.env.ADMIN_PASSWORD || "adminpassword"
+    const adminPassword = "admin"
 
     const existingAdmin = await User.findOne({ username: adminUsername })
     if (!existingAdmin) {
+      console.log("Creating admin user...")
       const adminUser = new User({
         username: adminUsername,
         password: adminPassword,
@@ -65,7 +66,7 @@ async function createAdminUser() {
 }
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB")
     createAdminUser()
