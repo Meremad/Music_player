@@ -1,4 +1,5 @@
 const axios = require("axios")
+const ApiHistory = require('../models/ApiHistory'); 
 
 exports.getPlayer = (req, res) => {
   res.render("player", { user: req.session.user })
@@ -59,6 +60,14 @@ exports.playSong = async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
       },
     })
+    const history = new ApiHistory({
+      userId: req.session.user.id,
+      endpoint: 'play-song',
+      query: `Song ID: ${id}`,
+      result: response.data,
+    });
+    
+    await history.save();
     console.log("Playing song:", response.data)
     res.json(response.data)
   } catch (error) {

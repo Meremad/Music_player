@@ -6,9 +6,7 @@ exports.getLyrics = async (req, res) => {
   try {
     const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
     const data = await response.json();
-    
-    // Save to history
-    await ApiHistory.create({
+      await ApiHistory.create({
       userId: req.session.user.id,
       endpoint: 'lyrics',
       query: `${artist} - ${title}`,
