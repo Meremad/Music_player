@@ -65,12 +65,3 @@ async function createAdminUser() {
     console.error("Error creating admin user:", error)
   }
 }
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("Connected to MongoDB")
-    createAdminUser()
-  })
-  .catch((err) => console.error("Could not connect to MongoDB:", err))
-
