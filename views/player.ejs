@@ -1,12 +1,24 @@
 <%- include('partials/header') %>
-<h1 class="text-3xl font-bold mb-4">Music Player</h1>
-<div class="mb-4">
-    <input type="text" id="searchInput" placeholder="Search for songs" class="w-full px-3 py-2 border rounded">
-    <button onclick="searchSongs()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Search</button>
-</div>
 
-<div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-<div id="player" class="mt-8"></div>
+<div class="container mx-auto p-6">
+    <h1 class="text-4xl font-bold text-center text-gray-800 mb-6">Music Player</h1>
+    
+    <div class="flex flex-col items-center mb-6">
+        <input type="text" id="searchInput" placeholder="Search for songs" 
+               class="w-full max-w-lg px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex gap-3 mt-3">
+            <button onclick="searchSongs()" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 shadow-md">Search</button>
+            <button id="watchVideoButton" onclick="getVideo()" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600" style="display: none;">Watch Video</button>
+        </div>
+    </div>
+    
+    <div id="videoContainer" class="mt-6 text-center"></div>
+    
+    <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"></div>
+    
+    <div id="player" class="mt-8 text-center"></div>
+</div>
 
 <script>
 function searchSongs() {
@@ -16,16 +28,23 @@ function searchSongs() {
         .then(data => {
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = '';
+            document.getElementById('videoContainer').innerHTML = '';
+            if (data.tracks.items.length > 0) {
+                document.getElementById('watchVideoButton').style.display = 'block';
+                document.getElementById('watchVideoButton').setAttribute('data-query', query);
+            }
             data.tracks.items.forEach(track => {
                 const trackDiv = document.createElement('div');
-                trackDiv.className = 'border p-4 rounded';
+                trackDiv.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col items-center';
                 trackDiv.innerHTML = `
-                    <h3 class="font-bold">${track.name}</h3>
-                    <p>${track.artists[0].name}</p>
-                    <img src="${track.album.images[0].url}" style="width:300px" class="mt-2 mb-2">
-                    <button onclick="playSong('${track.id}')" class="mt-2 bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Play</button>
-                    <a href="/player/details?artist=${track.artists[0].name}&title=${track.name}" class="mt-2 bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Details</a>
-                    `;
+                    <img src="${track.album.images[0].url}" class="w-48 h-48 rounded-lg shadow mb-3">
+                    <h3 class="text-lg font-semibold">${track.name}</h3>
+                    <p class="text-gray-600">${track.artists[0].name}</p>
+                    <div class="mt-3 flex gap-3">
+                        <button onclick="playSong('${track.id}')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Play</button>
+                        <a href="/player/details?artist=${track.artists[0].name}&title=${track.name}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Details</a>
+                    </div>
+                `;
                 resultsDiv.appendChild(trackDiv);
             });
         })
@@ -41,10 +60,9 @@ function playSong(trackId) {
         .then(data => {
             const playerDiv = document.getElementById('player');
             playerDiv.innerHTML = `
-                <h2 class="text-2xl font-bold mb-2">${data.name}</h2>
-                <p class="mb-2">${data.artists[0].name}</p>
-                <audio controls src="${data.preview_url}" class="w-full mb-4"></audio>
-                <button onclick="getVideo('${data.name} ${data.artists[0].name}')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Watch Video</button>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">${data.name}</h2>
+                <p class="text-gray-600 mb-2">${data.artists[0].name}</p>
+                <audio controls src="${data.preview_url}" class="w-full max-w-md mx-auto mb-4"></audio>
             `;
         })
         .catch(error => {
@@ -53,15 +71,16 @@ function playSong(trackId) {
         });
 }
 
-function getVideo(query) {
+function getVideo() {
+    const query = document.getElementById('watchVideoButton').getAttribute('data-query');
     fetch(`/player/video?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
-            const playerDiv = document.getElementById('player');
-            playerDiv.innerHTML += `
-                                <h3 class="text-xl font-bold mb-2">Music Video</h3>
-                <div class="mt-4"  style="display: flex; justify-content: center; align-items: center; margin: 20px;">
-                    <iframe  width="1200px" height="500px" src="https://www.youtube.com/embed/${data.videoId}" frameborder="0" allowfullscreen src="https://www.youtube.com/embed/${data.videoId}" frameborder="0" allowfullscreen></iframe>
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = `
+                <h3 class="text-xl font-bold mt-6 text-gray-800">Music Video</h3>
+                <div class="mt-4 flex justify-center">
+                    <iframe width="800" height="450" src="https://www.youtube.com/embed/${data.videoId}" frameborder="0" allowfullscreen class="rounded-lg shadow-lg"></iframe>
                 </div>
             `;
         })
@@ -70,7 +89,6 @@ function getVideo(query) {
             alert('An error occurred while fetching the video. Please try again.');
         });
 }
-
 </script>
 
 <%- include('partials/footer') %>
