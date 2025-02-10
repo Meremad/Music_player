@@ -2,7 +2,8 @@
 
 <div class="container mx-auto p-6">
     <h1 class="text-4xl font-bold text-center text-gray-800 mb-6">Music Player</h1>
-    
+
+    <!-- Search Section -->
     <div class="flex flex-col items-center mb-6">
         <input type="text" id="searchInput" placeholder="Search for songs" 
                class="w-full max-w-lg px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -12,27 +13,103 @@
             <button id="watchVideoButton" onclick="getVideo()" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600" style="display: none;">Watch Video</button>
         </div>
     </div>
-    
+
     <div id="videoContainer" class="mt-6 text-center"></div>
-    
+
+
     <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"></div>
     
-    <div id="player" class="mt-8 text-center"></div>
+
+    <div id="player" class="mt-6 text-center"></div>
+    
+    <!-- News Section -->
+    <div id="newsSection" class="mt-12">
+        <h2 class="text-3xl font-semibold mb-6 text-gray-800 text-center">Latest Music News</h2>
+        <div id="newsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- News cards will be inserted here -->
+            <div class="text-center text-gray-500">Loading music news...</div>
+        </div>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+// News Loading Logic
+document.addEventListener("DOMContentLoaded", async () => {
+    const newsContainer = document.getElementById("newsContainer");
+    const API_KEY = "<%= process.env.NEWS_API_KEY %>";
+
+    try {
+        const response = await axios.get("https://newsapi.org/v2/everything", {
+            params: {
+                apiKey: API_KEY,
+                q: "music",
+                language: "en",
+                sortBy: "publishedAt",
+                pageSize: 4
+            }
+        });
+
+        if (!response.data || !response.data.articles) {
+            throw new Error("Invalid API response structure");
+        }
+
+        newsContainer.innerHTML = "";
+        response.data.articles.forEach(article => {
+            const card = document.createElement("a");
+            card.href = article.url;
+            card.target = "_blank";
+            card.className = "bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow";
+            
+            const image = article.urlToImage || "https://via.placeholder.com/600x400?text=No+Image";
+            const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Unknown date';
+            
+            card.innerHTML = `
+                <div class="h-48 bg-gray-100 overflow-hidden mb-3">
+                    <img src="${image}" alt="${article.title}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">${article.title}</h3>
+                <p class="text-sm text-gray-600 line-clamp-2">${article.description || ''}</p>
+                <div class="mt-2 text-sm text-gray-500">
+                    ${date} • ${article.source?.name || ''}
+                </div>
+            `;
+            newsContainer.appendChild(card);
+        });
+    } catch (error) {
+        console.error("News loading error:", error);
+        newsContainer.innerHTML = `
+            <div class="col-span-2 text-center py-8 text-red-500">
+                Failed to load news. Please try again later.
+            </div>`;
+    }
+});
+
+// Modified Search Function
 function searchSongs() {
-    const query = document.getElementById('searchInput').value;
+    const query = document.getElementById('searchInput').value.trim();
+    const newsSection = document.getElementById('newsSection');
+    
+    if (!query) {
+        newsSection.style.display = 'block';
+        return alert('Please enter a search query');
+    }
+
+    // Hide news when searching
+    newsSection.style.display = 'none';
+
     fetch(`/player/search?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = '';
             document.getElementById('videoContainer').innerHTML = '';
+            
             if (data.tracks.items.length > 0) {
                 document.getElementById('watchVideoButton').style.display = 'block';
                 document.getElementById('watchVideoButton').setAttribute('data-query', query);
             }
+            
             data.tracks.items.forEach(track => {
                 const trackDiv = document.createElement('div');
                 trackDiv.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col items-center';
@@ -50,10 +127,12 @@ function searchSongs() {
         })
         .catch(error => {
             console.error('Error:', error);
+            newsSection.style.display = 'block'; // Show news again on error
             alert('An error occurred while searching for songs. Please try again.');
         });
 }
 
+// Play Song Function
 function playSong(trackId) {
     fetch(`/player/play/${trackId}`)
         .then(response => response.json())
@@ -71,6 +150,7 @@ function playSong(trackId) {
         });
 }
 
+// Get Video Function
 function getVideo() {
     const query = document.getElementById('watchVideoButton').getAttribute('data-query');
     fetch(`/player/video?q=${encodeURIComponent(query)}`)
