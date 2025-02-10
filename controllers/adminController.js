@@ -1,45 +1,71 @@
+// controllers/adminController.js
+const MainPageItem = require('../models/MainPageItem');
 const User = require('../models/User');
 
 exports.getAdminPanel = async (req, res) => {
+  const items = await MainPageItem.find({ deletedAt: null });
+  res.render('admin-items', { items });
+};
+
+exports.getMainPageItems = async (req, res) => {
   try {
-    const users = await User.find({ deletedAt: null });
-    res.render("admin", { users });
+    const items = await MainPageItem.find({ deletedAt: null });
+    res.json(items);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.createMainPageItem = async (req, res) => {
+  try {
+    const { name_en, name_ru, description_en, description_ru, images } = req.body;
+
+    if (!name_en || !name_ru || !description_en || !description_ru || !images || images.length !== 3) {
+      return res.status(400).json({ error: 'All fields are required, including exactly 3 images' });
+    }
+
+    const newItem = new MainPageItem({
+      name_en,
+      name_ru,
+      description_en,
+      description_ru,
+      images
+    });
+
+    await newItem.save();
+    res.status(201).json(newItem);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create item' });
+  }
+};
+
+exports.updateMainPageItem = async (req, res) => {
+  try {
+    const updatedItem = await MainPageItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedItem);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update item' });
+  }
+};
+
+exports.deleteMainPageItem = async (req, res) => {
+  try {
+    const item = await MainPageItem.findByIdAndUpdate(req.params.id, { deletedAt: new Date() }, { new: true });
+    res.json({ message: 'Item marked as deleted', item });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete item' });
   }
 };
 
 exports.deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.params.id, { deletedAt: new Date() });
-    res.json({ success: true });
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Error deleting user' });
-  }
-};
-
-exports.createUser = async (req, res) => {
-  try {
-    const { username, password, isAdmin } = req.body;
-    const user = new User({ username, password, isAdmin: Boolean(isAdmin) });
-    await user.save();
-    res.redirect('/admin');
-  } catch (error) {
-    res.render('admin', { error: 'Error creating user' });
-  }
-};
-
-exports.updateUser = async (req, res) => {
-  try {
-    const { username, isAdmin } = req.body;
-    await User.findByIdAndUpdate(req.params.id, { 
-      username,
-      isAdmin: Boolean(isAdmin),
-      updatedAt: new Date()
-    });
-    res.redirect('/admin');
-  } catch (error) {
-    res.render('admin', { error: 'Error updating user' });
+    res.status(500).json({ error: "Failed to delete user" });
   }
 };

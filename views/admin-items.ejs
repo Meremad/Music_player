@@ -1,0 +1,72 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<h1 class="text-3xl font-bold mb-4">Manage Main Page Items</h1>
+
+<form id="addItemForm" class="mb-4">
+    <input type="text" name="name_en" placeholder="Name (English)" required class="border p-2">
+    <input type="text" name="name_ru" placeholder="Name (Russian)" required class="border p-2">
+    <textarea name="description_en" placeholder="Description (English)" required class="border p-2"></textarea>
+    <textarea name="description_ru" placeholder="Description (Russian)" required class="border p-2"></textarea>
+    <input type="url" name="images" placeholder="Image 1 URL" required class="border p-2">
+    <input type="url" name="images" placeholder="Image 2 URL" required class="border p-2">
+    <input type="url" name="images" placeholder="Image 3 URL" required class="border p-2">
+    <button type="submit" class="bg-green-500 text-white px-4 py-2">Add Item</button>
+</form>
+
+<table class="w-full border-collapse border">
+    <thead>
+        <tr>
+            <th class="border p-2">Name</th>
+            <th class="border p-2">Description</th>
+            <th class="border p-2">Images</th>
+            <th class="border p-2">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% items.forEach(item => { %>
+            <tr>
+                <td class="border p-2"><%= item.name_en %> / <%= item.name_ru %></td>
+                <td class="border p-2"><%= item.description_en %> / <%= item.description_ru %></td>
+                <td class="border p-2">
+                    <% item.images.forEach(img => { %>
+                        <img src="<%= img %>" class="w-16 h-16 inline-block">
+                    <% }) %>
+                </td>
+                <td class="border p-2">
+                    <form action="/admin/main-page-items/<%= item._id %>" method="POST" class="inline">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="bg-red-500 text-white px-2 py-1">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+<script>
+document.getElementById("addItemForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    const images = [formData.getAll("images")[0], formData.getAll("images")[1], formData.getAll("images")[2]];
+
+    const data = {
+        name_en: formData.get("name_en"),
+        name_ru: formData.get("name_ru"),
+        description_en: formData.get("description_en"),
+        description_ru: formData.get("description_ru"),
+        images: images
+    };
+
+    const response = await fetch("/admin/main-page-items", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+    });
+
+    if (response.ok) {
+        alert("Item added successfully!");
+        location.reload();
+    } else {
+        alert("Failed to add item");
+    }
+});
+</script>

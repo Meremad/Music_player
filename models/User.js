@@ -1,3 +1,4 @@
+// models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -8,13 +9,7 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date },
   deletedAt: { type: Date },
-  apiHistory: [{
-    endpoint: String,
-    query: String,
-    timestamp: { type: Date, default: Date.now }
-  }]
 });
-
 
 userSchema.pre('save', async function(next) {
   if (this.isModified('password')) {

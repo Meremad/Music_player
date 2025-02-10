@@ -4,6 +4,7 @@ const session = require("express-session")
 const dotenv = require("dotenv")
 const expressLayouts = require("express-ejs-layouts")
 const path = require("path")
+const User = require("./models/User") 
 
 dotenv.config()
 
@@ -54,14 +55,15 @@ app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
 // Routes
+const adminRoutes = require("./routes/admin"); // Импорт
+app.use("/admin", adminRoutes); // Подключаем маршруты
 app.use("/", require("./routes/auth"))
 app.use("/player", require("./routes/player"))
 app.use("/admin", require("./routes/admin"))
 app.use("/api", require("./routes/api"))
+app.use('/quiz', require('./routes/quiz'));
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-
-const User = require("./models/User")
 
 
