@@ -3,8 +3,14 @@
 
 <h1 class="text-3xl font-bold mb-4">Manage Main Page Items</h1>
 
+<!-- Ссылки для управления постами и пользователями -->
+<div class="mb-4">
+    <a href="/admin/posts" class="bg-blue-500 text-white px-4 py-2 rounded mr-2">Manage Posts</a>
+    <a href="/admin/users" class="bg-blue-500 text-white px-4 py-2 rounded">Manage Users</a>
+</div>
+
 <!-- Форма добавления нового элемента -->
-<form id="addItemForm" class="mb-4 space-y-4">
+<form id="addItemForm" class="mb-4 space-y-4" method="POST">
   <input type="text" name="name_en" placeholder="Name (English)" required class="border p-2 w-full">
   <input type="text" name="name_ru" placeholder="Name (Russian)" required class="border p-2 w-full">
   <textarea name="description_en" placeholder="Description (English)" required class="border p-2 w-full"></textarea>
@@ -36,10 +42,7 @@
           <% }) %>
         </td>
         <td class="border p-2">
-          <form action="/admin/main-page-items/<%= item._id %>" method="POST" class="inline">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="bg-red-500 text-white px-2 py-1">Delete</button>
-          </form>
+          <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteItem('<%= item._id %>')">Delete</button>
         </td>
       </tr>
     <% }) %>
@@ -47,11 +50,20 @@
 </table>
 
 <script>
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        fetch(`/admin/main-page-items/${itemId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            });
+    }
+}
+
 // Обработчик отправки формы для добавления нового элемента
 document.getElementById("addItemForm").addEventListener("submit", async function(event) {
     event.preventDefault();
     const formData = new FormData(this);
-    // Получаем все значения из полей с именем "images" (их должно быть ровно 3)
     const images = formData.getAll("images");
 
     const data = {

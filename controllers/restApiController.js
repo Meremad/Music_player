@@ -53,7 +53,7 @@ class RestApiController {
         const { id } = req.params;
         await Post.findByIdAndDelete(id);
         console.log(`Post successfully deleted!`);
-        return res.json({ message: 'Post successfully deleted!' });
+        return res.status(204).json({ message: 'Post successfully deleted!' });
     } catch (err) {
         console.error('Error during deleting post:', err);
         res.status(500).json({ message: 'server error' });

@@ -5,6 +5,8 @@ const { isAdmin } = require('../middleware/auth');
 
 // Панель администратора
 router.get('/', isAdmin, adminController.getAdminPanel);
+router.get('/users', isAdmin, adminController.getUsers);
+router.get('/posts', isAdmin, adminController.getPosts);
 
 // Управление элементами
 router.get('/main-page-items', isAdmin, adminController.getMainPageItems);

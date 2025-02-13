@@ -57,4 +57,27 @@
       </nav>
     </div>
   </div>
+  <div id="google_translate_element" class="absolute top-4 right-4 bg-gray-100 p-2 rounded shadow-md hidden"></div>
+  <button id="translateToggle" class="absolute top-4 right-4 bg-blue-500 text-white px-2 py-1 rounded">Translate</button>
 </header>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  document.getElementById('translateToggle').addEventListener('click', function() {
+    const translateElement = document.getElementById('google_translate_element');
+    if (translateElement.classList.contains('hidden')) {
+      translateElement.classList.remove('hidden');
+      this.textContent = 'Hide Translate';
+    } else {
+      translateElement.classList.add('hidden');
+      this.textContent = 'Translate';
+    }
+  });
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>

@@ -1,6 +1,7 @@
 // controllers/adminController.js
 const MainPageItem = require('../models/MainPageItem');
 const User = require('../models/User');
+const Post = require('../models/Post');
 
 exports.getAdminPanel = async (req, res) => {
   const items = await MainPageItem.find({ deletedAt: null });
@@ -50,7 +51,7 @@ exports.updateMainPageItem = async (req, res) => {
 
 exports.deleteMainPageItem = async (req, res) => {
   try {
-    const item = await MainPageItem.findByIdAndUpdate(req.params.id, { deletedAt: new Date() }, { new: true });
+    const item = await MainPageItem.deleteOne({ id: req.params.id });
     res.json({ message: 'Item marked as deleted', item });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete item' });
@@ -69,3 +70,21 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: "Failed to delete user" });
   }
 };
+
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+  res.render('admin', { users });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+}
+exports.getPosts = async (req, res) => {
+  try {
+    const posts = await Post.find();
+  res.render('admin-posts', { posts });
+  } catch (err) {
+    console.error('Error during getting posts:', err);
+    res.status(500).json({ message: 'server error' });
+  }
+}
