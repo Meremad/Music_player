@@ -27,6 +27,7 @@
                         <p class="text-gray-500 mb-2">By: ${post.username}</p>
                         ${post.img ? `<img src="${post.img}" alt="${post.title}" class="mb-2">` : ''}
                         ${post.song ? `<audio controls src="${post.song}" class="mb-2"></audio>` : ''}
+                        <a href="catalog/${post._id}" class="text-blue-500 hover:underline">View More</a>
                     `;
                     postsContainer.appendChild(postElement);
                 });

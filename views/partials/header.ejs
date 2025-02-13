@@ -11,6 +11,13 @@
       <nav>
         <ul class="flex space-x-6 items-center">
           <% if (locals.user) { %>
+
+            <li>
+              <a href="/posts/create" class="text-gray-600 hover:text-gray-900 font-medium transition duration-200 ease-in-out">Create post</a>
+            </li>
+            <li>
+              <a href="/posts/catalog" class="text-gray-600 hover:text-gray-900 font-medium transition duration-200 ease-in-out">Catalog</a>
+            </li>
             <!-- Player Link -->
             <li>
               <a href="/player" class="text-gray-600 hover:text-gray-900 font-medium transition duration-200 ease-in-out">Player</a>

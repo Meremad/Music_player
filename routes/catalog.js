@@ -2,22 +2,21 @@ const express = require('express');
 const Post = require('../models/Post');
 const router = express.Router();
 
-
-router.get('/catalog', (req, res) => {
-    post = Post.find()
-  res.render('catalog', {posts: post});
+router.get('/catalog', async (req, res) => {
+    const posts = await Post.find();
+    res.render('catalog', { posts: posts });
 });
 
-router.get('/catalog/:id', (req, res) => {
+router.get('/catalog/:id', async (req, res) => {
     const post_id = req.params.id;
     const username = req.session.username;
-    const post = Post.findById(post_id);
-    const post_author = post.author;
+    const post = await Post.findById(post_id);
+    const post_author = post.username;
 
     if (username == post_author) {
-        res.render('post', {post: post, isAuthor: true});
+        res.render('post', { post: post, isAuthor: true });
     } else {
-        res.render('post', {post: post, isAuthor: false});
+        res.render('post', { post: post, isAuthor: false });
     }
 });
 

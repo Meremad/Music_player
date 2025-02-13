@@ -5,7 +5,8 @@ const QuizResult = require('../models/QuizResult');
 exports.getQuiz = async (req, res) => {
   try {
     // Сначала пытаемся найти квиз, в заголовке которого содержится "music" (без учета регистра)
-    let quiz = await Quiz.findOne({ title: /music/i });
+    console.log(Quiz.find());
+    let quiz = await Quiz.findOne({ title: { $regex: 'music', $options: 'i' } });
     
     // Если не найден, пробуем найти любой квиз в базе
     if (!quiz) {
@@ -56,5 +57,23 @@ exports.submitQuiz = async (req, res) => {
   } catch (error) {
     console.error('Error in submitQuiz:', error);
     res.status(500).json({ error: 'Failed to submit quiz' });
+  }
+};
+
+exports.createQuiz = async (req, res) => {
+  try {
+    const { title, questions, timeLimit } = req.body;
+
+    const newQuiz = new Quiz({
+      title,
+      questions,
+      timeLimit
+    });
+
+    await newQuiz.save();
+    res.status(201).json({ message: 'Quiz created successfully', quiz: newQuiz });
+  } catch (error) {
+    console.error('Error in createQuiz:', error);
+    res.status(500).json({ error: 'Failed to create quiz' });
   }
 };

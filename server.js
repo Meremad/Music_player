@@ -5,7 +5,7 @@ const dotenv = require("dotenv")
 const expressLayouts = require("express-ejs-layouts")
 const path = require("path")
 const User = require("./models/User") 
-
+const isAuthenticated = require("./middleware/auth.js")
 dotenv.config()
 
 const app = express()
@@ -71,8 +71,8 @@ app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 
 // Routes
 const adminRoutes = require("./routes/admin"); // Импорт
-app.use("/admin", adminRoutes); // Подключаем маршруты
 app.use("/", require("./routes/auth"))
+app.use("/admin", adminRoutes); // Подключаем маршруты
 app.use("/player", require("./routes/player"))
 app.use("/admin", require("./routes/admin"))
 app.use("/api", require("./routes/api"))

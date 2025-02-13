@@ -23,7 +23,7 @@ class RestApiController {
   async createPost(req, res) {
     try {
         const { title, content } = req.body;
-        const username = req.user ? req.user.username : 'anonymous';
+        const username = req.session.user ? req.session.user.username : 'anonymous';
         const imgPath = req.files.image ? `/downloads/img/${req.files.image[0].filename}` : '';
         const songPath = req.files.song ? `/downloads/song/${req.files.song[0].filename}` : '';
 
@@ -38,8 +38,8 @@ class RestApiController {
   }
   async updatePost(req, res) {
     try {
-        const { id } = req.params;
-        const { title, content } = req.body;
+      const { title, content } = req.body;
+      const username = req.user ? req.user.username : 'anonymous';
         const post = await Post.findByIdAndUpdate(id, { title, content }, { new: true });
         console.log(`Post ${title} successfully updated!`);
         return res.json(post);
