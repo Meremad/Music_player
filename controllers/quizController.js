@@ -1,27 +1,32 @@
-// controllers/quizController.js
 const Quiz = require('../models/Quiz');
+const QuizResult = require('../models/QuizResult');
 
-exports.getQuizzes = async (req, res) => {
-  try {
-    const quizzes = await Quiz.find();
-    res.render('quizzes', { quizzes });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch quizzes' });
-  }
-};
-
+// Получение квиза (бонусный квиз)
 exports.getQuiz = async (req, res) => {
   try {
-    const quiz = await Quiz.findById(req.params.id);
+    // Сначала пытаемся найти квиз, в заголовке которого содержится "music" (без учета регистра)
+    let quiz = await Quiz.findOne({ title: /music/i });
+    
+    // Если не найден, пробуем найти любой квиз в базе
     if (!quiz) {
-      return res.status(404).json({ error: 'Quiz not found' });
+      quiz = await Quiz.findOne();
     }
+    
+    if (!quiz) {
+      return res.status(404).send('Quiz not found');
+    }
+    
+    // Рендерим шаблон для квиза (если у вас файл называется quiz.ejs, используйте его)
     res.render('quiz', { quiz });
+    // Если вы хотите использовать другой шаблон, например bonus.ejs, то:
+    // res.render('bonus', { quiz });
   } catch (error) {
+    console.error('Error in getQuiz:', error);
     res.status(500).json({ error: 'Failed to fetch quiz' });
   }
 };
 
+// Обработка отправки квиза
 exports.submitQuiz = async (req, res) => {
   try {
     const { quizId, answers } = req.body;
@@ -29,78 +34,27 @@ exports.submitQuiz = async (req, res) => {
     if (!quiz) {
       return res.status(404).json({ error: 'Quiz not found' });
     }
-
+    
     let score = 0;
     quiz.questions.forEach((question, index) => {
-      if (question.correctAnswer === answers[index]) {
+      if (question.correctAnswer === parseInt(answers[index], 10)) {
         score++;
       }
     });
 
-    const result = {
+    // Сохраняем результат квиза
+    const result = new QuizResult({
+      user: req.session.user ? req.session.user.id : null,
+      quiz: quizId,
       score,
       totalQuestions: quiz.questions.length
-    };
+    });
+    await result.save();
 
-    res.render('quiz-result', { result });
+    // Перенаправляем на страницу результата квиза
+    res.redirect(`/quiz/result/${result._id}`);
   } catch (error) {
+    console.error('Error in submitQuiz:', error);
     res.status(500).json({ error: 'Failed to submit quiz' });
   }
 };
-
-exports.createQuiz = async (req, res) => {
-  try {
-    const { title, questions, timeLimit } = req.body;
-    const newQuiz = new Quiz({
-      title,
-      questions,
-      timeLimit
-    });
-    await newQuiz.save();
-    res.status(201).json(newQuiz);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create quiz' });
-  }
-};
-
-exports.submitQuiz = async (req, res) => {
-    try {
-      const { quizId, answers } = req.body;
-      const quiz = await Quiz.findById(quizId);
-      if (!quiz) {
-        return res.status(404).json({ error: 'Quiz not found' });
-      }
-  
-      let score = 0;
-      quiz.questions.forEach((question, index) => {
-        if (question.correctAnswer === answers[index]) {
-          score++;
-        }
-      });
-  
-      const result = new QuizResult({
-        user: req.session.user.id,
-        quiz: quizId,
-        score,
-        totalQuestions: quiz.questions.length
-      });
-  
-      await result.save();
-  
-      res.json({ resultId: result._id });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to submit quiz' });
-    }
-  };
-  
-  exports.getQuizResult = async (req, res) => {
-    try {
-      const result = await QuizResult.findById(req.params.id).populate('quiz');
-      if (!result) {
-        return res.status(404).json({ error: 'Result not found' });
-      }
-      res.render('quiz-result', { result });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch quiz result' });
-    }
-  };

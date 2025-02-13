@@ -1,107 +1,93 @@
 <%- include('partials/header') %>
 
-<div class="container mx-auto p-6 text-center">
-    <h1 class="text-5xl font-extrabold text-gray-900 mb-6">Welcome to Music Player</h1>
-    <p class="text-xl text-gray-600 mb-8">Enjoy your favorite music and discover new tracks!</p>
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-4">Music Industry Quiz</h1>
+  
+  <!-- Timer -->
+  <div id="timer" class="text-xl font-semibold text-red-500 mb-4">
+    Time Remaining: <span id="timeRemaining"></span>
+  </div>
+  
+  <!-- Quiz Form -->
+  <form id="quizForm" action="/quiz/submit" method="POST">
+    <!-- Pass the quiz ID -->
+    <input type="hidden" name="quizId" value="<%= quiz._id %>">
     
-    <% if (!locals.user) { %>
-        <div class="space-x-4">
-            <a href="/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-lg">Login</a>
-            <a href="/register" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg">Register</a>
-        </div>
-    <% } else { %>
-        <a href="/player" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors shadow-lg">Go to Player</a>
-    <% } %>
-</div>
-
-<div class="container mx-auto p-6 bg-gray-100 rounded-lg shadow-xl">
-    <div class="flex flex-col items-center mb-6">
-        <input type="text" id="searchInput" placeholder="Search for songs" 
-               class="w-full max-w-lg px-4 py-2 border border-gray-400 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <div class="flex gap-3 mt-3 w-full max-w-lg">
-            <button onclick="searchSongs()" 
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 shadow-md flex-grow">Search</button>
-            <button id="watchVideoButton" onclick="getVideo()" 
-                    class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 flex-grow hidden">Watch Video</button>
-        </div>
-    </div>
+    <% quiz.questions.forEach(function(question, index) { %>
+      <div class="mb-6 p-4 border rounded-lg shadow-sm bg-white">
+        <h2 class="text-xl font-bold mb-2">
+          <%= index + 1 %>. <%= question.question %>
+        </h2>
+        
+        <!-- If the question has an image (e.g., album cover) -->
+        <% if (question.imageUrl) { %>
+          <img src="<%= question.imageUrl %>" alt="Question Image" class="mb-2 w-48 h-48 object-cover rounded">
+        <% } %>
+        
+        <% question.options.forEach(function(option, optIndex) { %>
+          <div class="mb-1">
+            <input type="radio" name="answers[<%= index %>]" id="q<%= index %>o<%= optIndex %>" value="<%= optIndex %>" required>
+            <label for="q<%= index %>o<%= optIndex %>"><%= option %></label>
+          </div>
+        <% }); %>
+      </div>
+    <% }); %>
     
-    <div id="videoContainer" class="mt-6 text-center"></div>
-    
-    <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
-    
-    <div id="player" class="mt-8 text-center"></div>
+    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-lg">
+      Submit Quiz
+    </button>
+  </form>
+  
+  <!-- Social Sharing Buttons -->
+  <div class="mt-8">
+    <h2 class="text-2xl font-bold mb-4">Share your quiz experience</h2>
+    <button onclick="shareOnFacebook()" class="bg-blue-800 text-white px-4 py-2 rounded-lg mr-2">Share on Facebook</button>
+    <button onclick="shareOnTwitter()" class="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2">Share on Twitter</button>
+    <button onclick="shareOnLinkedIn()" class="bg-blue-700 text-white px-4 py-2 rounded-lg">Share on LinkedIn</button>
+  </div>
 </div>
 
 <script>
-function searchSongs() {
-    const query = document.getElementById('searchInput').value;
-    fetch(`/player/search?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            const resultsDiv = document.getElementById('searchResults');
-            resultsDiv.innerHTML = '';
-            document.getElementById('videoContainer').innerHTML = '';
-            if (data.tracks.items.length > 0) {
-                document.getElementById('watchVideoButton').style.display = 'block';
-                document.getElementById('watchVideoButton').setAttribute('data-query', query);
-            }
-            data.tracks.items.forEach(track => {
-                const trackDiv = document.createElement('div');
-                trackDiv.className = 'bg-white p-6 rounded-lg shadow-lg flex flex-col items-center';
-                trackDiv.innerHTML = `
-                    <img src="${track.album.images[0].url}" class="w-48 h-48 rounded-lg shadow mb-3">
-                    <h3 class="text-lg font-semibold">${track.name}</h3>
-                    <p class="text-gray-600">${track.artists[0].name}</p>
-                    <div class="mt-3 flex gap-3">
-                        <button onclick="playSong('${track.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Play</button>
-                        <a href="/player/details?artist=${track.artists[0].name}&title=${track.name}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Details</a>
-                    </div>
-                `;
-                resultsDiv.appendChild(trackDiv);
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while searching for songs. Please try again.');
-        });
-}
+  // Передаём значение таймера как строку, затем преобразуем в число
+  const quizDuration = parseInt("<%= quiz.timeLimit %>", 10) || 0;
+  let timeLeft = quizDuration;
+  const timerElement = document.getElementById('timeRemaining');
 
-function playSong(trackId) {
-    fetch(`/player/play/${trackId}`)
-        .then(response => response.json())
-        .then(data => {
-            const playerDiv = document.getElementById('player');
-            playerDiv.innerHTML = `
-                <h2 class="text-2xl font-bold mb-2 text-gray-800">${data.name}</h2>
-                <p class="text-gray-600 mb-2">${data.artists[0].name}</p>
-                <audio controls src="${data.preview_url}" class="w-full max-w-md mx-auto mb-4"></audio>
-            `;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while playing the song. Please try again.');
-        });
-}
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerElement.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("Time is up! Your quiz will be submitted automatically.");
+      document.getElementById('quizForm').submit();
+    }
+    timeLeft--;
+  }
 
-function getVideo() {
-    const query = document.getElementById('watchVideoButton').getAttribute('data-query');
-    fetch(`/player/video?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            const videoContainer = document.getElementById('videoContainer');
-            videoContainer.innerHTML = `
-                <h3 class="text-xl font-bold mt-6 text-gray-800">Music Video</h3>
-                <div class="mt-4 flex justify-center">
-                    <iframe width="800" height="450" src="https://www.youtube.com/embed/${data.videoId}" frameborder="0" allowfullscreen class="rounded-lg shadow-lg"></iframe>
-                </div>
-            `;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while fetching the video. Please try again.');
-        });
-}
+  const timerInterval = setInterval(updateTimer, 1000);
+
+  // Sharing functions
+  function shareOnFacebook() {
+    const text = 'I just took the Music Industry Quiz!';
+    const url = window.location.href;
+    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+    window.open(fbShareUrl, '_blank');
+  }
+
+  function shareOnTwitter() {
+    const text = 'I just took the Music Industry Quiz!';
+    const url = window.location.href;
+    const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterShareUrl, '_blank');
+  }
+
+  function shareOnLinkedIn() {
+    const url = window.location.href;
+    const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+    window.open(linkedInShareUrl, '_blank');
+  }
 </script>
 
 <%- include('partials/footer') %>
