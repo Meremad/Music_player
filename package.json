@@ -1,0 +1,31 @@
+{
+    "name": "music-player-project",
+    "version": "1.0.0",
+    "description": "A music player project with admin panel",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node-dev server.js"
+    },
+    "dependencies": {
+        "axios": "^1.7.9",
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^10.0.0",
+        "ejs": "^3.1.10",
+        "express": "^4.21.2",
+        "express-ejs-layouts": "^2.5.1",
+        "express-session": "^1.18.1",
+        "i18n": "^0.15.1",
+        "mongoose": "^6.13.8",
+        "multer": "^1.4.5-lts.1",
+        "node-fetch": "^2.7.0",
+        "querystring": "^0.2.1",
+        "semver": "^7.6.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "node-dev": "^8.0.0"
+    }
+}

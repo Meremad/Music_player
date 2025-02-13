@@ -1,0 +1,62 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<div class="min-h-screen bg-gray-100 py-8">
+  <div class="container mx-auto px-4">
+    <!-- Заголовок и кнопка "Back" -->
+    <div class="mb-6 flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-gray-800">API Request History</h1>
+      <button onclick="history.back()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded transition duration-200">
+        Back
+      </button>
+    </div>
+
+    <!-- Карточка с таблицей -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="text-left p-3">Name</th>
+            <th class="text-left p-3">Type</th>
+            <th class="text-left p-3">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% history.forEach(entry => { %>
+            <tr class="border-t hover:bg-gray-50">
+              <td class="p-3"><%= entry.query %></td>
+              <td class="p-3"><%= entry.endpoint %></td>
+              <td class="p-3"><%= entry.timestamp.toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Модальное окно для деталей запроса -->
+    <div id="detailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+      <div class="bg-white p-8 rounded-lg max-w-2xl w-full">
+        <h2 class="text-2xl font-bold mb-4">Request Details</h2>
+        <pre id="detailsContent" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+        <button onclick="closeModal()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function viewDetails(id) {
+  fetch(`/api/history/${id}`)
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('detailsContent').textContent = JSON.stringify(data, null, 2);
+      document.getElementById('detailsModal').classList.remove('hidden');
+      document.getElementById('detailsModal').classList.add('flex');
+    });
+}
+
+function closeModal() {
+  document.getElementById('detailsModal').classList.add('hidden');
+  document.getElementById('detailsModal').classList.remove('flex');
+}
+</script>

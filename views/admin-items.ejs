@@ -1,0 +1,85 @@
+<!-- Подключаем TailwindCSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<h1 class="text-3xl font-bold mb-4">Manage Main Page Items</h1>
+
+<!-- Форма добавления нового элемента -->
+<form id="addItemForm" class="mb-4 space-y-4">
+  <input type="text" name="name_en" placeholder="Name (English)" required class="border p-2 w-full">
+  <input type="text" name="name_ru" placeholder="Name (Russian)" required class="border p-2 w-full">
+  <textarea name="description_en" placeholder="Description (English)" required class="border p-2 w-full"></textarea>
+  <textarea name="description_ru" placeholder="Description (Russian)" required class="border p-2 w-full"></textarea>
+  <input type="url" name="images" placeholder="Image 1 URL" required class="border p-2 w-full">
+  <input type="url" name="images" placeholder="Image 2 URL" required class="border p-2 w-full">
+  <input type="url" name="images" placeholder="Image 3 URL" required class="border p-2 w-full">
+  <button type="submit" class="bg-green-500 text-white px-4 py-2">Add Item</button>
+</form>
+
+<!-- Таблица с существующими элементами -->
+<table class="w-full border-collapse border mt-6">
+  <thead>
+    <tr>
+      <th class="border p-2">Name</th>
+      <th class="border p-2">Description</th>
+      <th class="border p-2">Images</th>
+      <th class="border p-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% items.forEach(item => { %>
+      <tr>
+        <td class="border p-2"><%= item.name_en %> / <%= item.name_ru %></td>
+        <td class="border p-2"><%= item.description_en %> / <%= item.description_ru %></td>
+        <td class="border p-2">
+          <% item.images.forEach(img => { %>
+            <img src="<%= img %>" class="w-16 h-16 inline-block mr-2" alt="News Image">
+          <% }) %>
+        </td>
+        <td class="border p-2">
+          <form action="/admin/main-page-items/<%= item._id %>" method="POST" class="inline">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="bg-red-500 text-white px-2 py-1">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<script>
+// Обработчик отправки формы для добавления нового элемента
+document.getElementById("addItemForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    // Получаем все значения из полей с именем "images" (их должно быть ровно 3)
+    const images = formData.getAll("images");
+
+    const data = {
+        name_en: formData.get("name_en"),
+        name_ru: formData.get("name_ru"),
+        description_en: formData.get("description_en"),
+        description_ru: formData.get("description_ru"),
+        images: images
+    };
+
+    try {
+        const response = await fetch("/admin/main-page-items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("Item added successfully!");
+            // Перезагружаем страницу для отображения обновлённого списка
+            location.reload();
+        } else {
+            const errorData = await response.json();
+            alert("Failed to add item: " + (errorData.error || "Unknown error"));
+        }
+    } catch (error) {
+        console.error("Error adding item:", error);
+        alert("An error occurred while adding the item.");
+    }
+});
+</script>

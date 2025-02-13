@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="/styles.css">
+    <!-- Подключение Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-5xl font-bold mb-6 text-gray-900">Welcome to Music Player</h1>
+        <p class="text-xl text-gray-600 mb-8">Enjoy your favorite music and discover new tracks!</p>
+        
+        <% if (!locals.user) { %>
+            <div class="space-x-4 mb-12">
+                <a href="/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">Login</a>
+                <a href="/register" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">Register</a>
+            </div>
+        <% } else { %>
+            <div class="mb-12">
+                <a href="/player" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">Go to Player</a>
+            </div>
+        <% } %>
+
+        <!-- News Section -->
+        <div class="text-left px-4">
+            <h2 class="text-3xl font-semibold mb-6 text-gray-800">Latest Music News</h2>
+            <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- News cards will be inserted here -->
+                <div class="text-center text-gray-500">Loading news...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const newsContainer = document.getElementById("news-container");
+        const API_KEY = "<%= process.env.NEWS_API_KEY %>";
+
+        try {
+            const response = await axios.get("https://newsapi.org/v2/everything", {
+                params: {
+                    apiKey: API_KEY,
+                    q: "Songs-music",
+                    language: "en",
+                    sortBy: "publishedAt",
+                    pageSize: 4
+                }
+            });
+
+            // Проверка структуры ответа
+            if (!response.data || !response.data.articles) {
+                throw new Error("Invalid API response structure");
+            }
+
+            newsContainer.innerHTML = "";
+            response.data.articles.forEach(article => {
+                const card = document.createElement("a");
+                card.href = article.url;
+                card.target = "_blank";
+                card.className = "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow";
+                
+                const image = article.urlToImage ? article.urlToImage : "https://via.placeholder.com/600x400?text=No+Image";
+                const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Unknown date';
+                
+                const content = `
+                    <div class="h-48 bg-gray-100 overflow-hidden">
+                        <img src="${image}" alt="${article.title}" class="w-full h-full object-cover" loading="lazy">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${article.title}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-3">${article.description || ''}</p>
+                        <div class="mt-3 text-sm text-gray-500">
+                            ${date} • ${article.source?.name || ''}
+                        </div>
+                    </div>
+                `;
+                
+                card.innerHTML = content;
+                newsContainer.appendChild(card);
+            });
+        } catch (error) {
+            console.error("News loading error:", error);
+            newsContainer.innerHTML = `
+                <div class="col-span-2 text-center py-8 text-red-500">
+                    Failed to load news. Error: ${error.message}
+                </div>`;
+        }
+    });
+    </script>
+</body>
+</html>
