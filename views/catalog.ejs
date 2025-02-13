@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+    <h1 class="text-2xl font-bold mb-4">Catalog</h1>
+    <div id="postsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <script>
+        async function fetchPosts() {
+            try {
+                const response = await fetch('/rest');
+                const posts = await response.json();
+                const postsContainer = document.getElementById('postsContainer');
+                postsContainer.innerHTML = '';
+
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('bg-white', 'p-4', 'rounded', 'shadow-md');
+
+                    postElement.innerHTML = `
+                        <h2 class="text-xl font-bold mb-2">${post.title}</h2>
+                        <p class="text-gray-700 mb-2">${post.content}</p>
+                        <p class="text-gray-500 mb-2">By: ${post.username}</p>
+                        ${post.img ? `<img src="${post.img}" alt="${post.title}" class="mb-2">` : ''}
+                        ${post.song ? `<audio controls src="${post.song}" class="mb-2"></audio>` : ''}
+                    `;
+                    postsContainer.appendChild(postElement);
+                });
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            }
+        }
+
+        fetchPosts();
+    </script>
+</body>
+</html>
